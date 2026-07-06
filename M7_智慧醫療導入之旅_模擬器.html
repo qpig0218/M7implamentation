@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>M7｜智慧醫療導入之旅：90 天試點模擬器</title>
+<style>
+:root{
+  --bg:#f7f2e6; --surface:#fffdf8; --panel:#fcf8ef; --ink:#1d1d1a; --muted:#5d625d;
+  --subtle:#8d918b; --line:#ddd4c4; --teal:#064d43; --teal-deep:#0a332c; --teal-soft:#e5efe9;
+  --gold:#b8842d; --gold-soft:#f4e8d2; --coral:#e85b38; --coral-deep:#d54e2d; --blue:#326a9b;
+  --green:#2e7d5b; --danger:#b3362a;
+  --radius:10px; --radius-lg:16px;
+  --shadow:0 18px 45px rgba(54,38,16,.12); --shadow-soft:0 6px 18px rgba(54,38,16,.08);
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --serif:"Noto Serif TC","Songti TC","PMingLiU",Georgia,serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.65;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:var(--serif);color:var(--teal-deep);margin:0 0 .4em;line-height:1.3}
+p{margin:0 0 .7em}
+.wrap{max-width:880px;margin:0 auto;padding:16px 16px 72px}
+
+/* header */
+.brand{display:flex;align-items:center;gap:11px;padding:6px 2px 16px}
+.brand .mark{width:38px;height:38px;flex:0 0 auto}
+.brand b{font-size:15px;font-weight:800;letter-spacing:.2px;color:var(--teal-deep);display:block}
+.brand span{font-size:11.5px;color:var(--muted);font-weight:600;display:block;margin-top:1px}
+.brand .spacer{flex:1}
+.brand .modtag{font-size:11px;font-weight:800;color:var(--gold);background:var(--gold-soft);border:1px solid rgba(184,132,45,.3);padding:4px 10px;border-radius:999px;white-space:nowrap}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--shadow-soft);padding:22px 24px;margin-bottom:16px}
+.eyebrow{font-size:12px;font-weight:800;letter-spacing:.14em;color:var(--coral);text-transform:uppercase;margin-bottom:6px}
+h1.big{font-size:27px;margin:0 0 6px;letter-spacing:.5px}
+.lede{color:var(--muted);font-size:14.5px;margin:0}
+.rule{height:1px;background:var(--line);border:0;margin:18px 0}
+
+.rolebox{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--teal);border-radius:12px;padding:15px 17px;margin:14px 0}
+.rolebox h3{font-size:15px;margin:0 0 5px;color:var(--teal-deep)}
+.rolebox p{font-size:14px;color:var(--ink);margin:0}
+.rolebox .tool{color:var(--coral-deep);font-weight:800}
+
+.metersintro{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:14px 0 4px}
+@media(max-width:560px){.metersintro{grid-template-columns:1fr}}
+.mi{display:flex;gap:9px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+.mi .dot{width:11px;height:11px;border-radius:50%;margin-top:5px;flex:0 0 auto}
+.mi b{font-size:13px;color:var(--teal-deep)}
+.mi small{display:block;font-size:11.5px;color:var(--muted);line-height:1.45}
+
+details.fac{margin:12px 0 2px;border:1px dashed var(--line);border-radius:12px;background:#fbfaf5;overflow:hidden}
+details.fac summary{cursor:pointer;list-style:none;padding:12px 15px;font-weight:800;font-size:13.5px;color:var(--teal-deep)}
+details.fac summary::-webkit-details-marker{display:none}
+details.fac summary::before{content:"▸";color:var(--gold);margin-right:8px;font-weight:900}
+details.fac[open] summary::before{content:"▾"}
+details.fac .facbody{padding:2px 16px 15px;font-size:13.5px;color:var(--muted)}
+details.fac .facbody b{color:var(--ink)}
+.facrow{margin:8px 0}
+.facrow .n{display:inline-flex;width:20px;height:20px;border-radius:50%;background:var(--teal);color:#fff;font-size:11px;font-weight:800;align-items:center;justify-content:center;margin-right:8px}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--teal);background:var(--teal);color:#fff;padding:14px 22px;border-radius:12px;font-size:16px;font-weight:800;cursor:pointer;transition:all .15s;font-family:var(--sans);width:100%}
+.btn:hover{background:var(--teal-deep)}
+.btn:active{transform:translateY(1px)}
+.btn.coral{background:var(--coral);border-color:var(--coral)}
+.btn.coral:hover{background:var(--coral-deep)}
+.btn.ghost{background:transparent;color:var(--teal)}
+.btn.ghost:hover{background:var(--teal-soft)}
+
+/* meters (sticky during play) */
+.meterbar{position:sticky;top:0;z-index:20;background:rgba(247,242,230,.92);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:14px;padding:12px 14px 10px;margin-bottom:14px;box-shadow:var(--shadow-soft)}
+.mbhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+.mbhead .phase{font-size:12.5px;font-weight:800;color:var(--teal-deep)}
+.mbhead .phase em{font-style:normal;color:var(--coral-deep)}
+.mbhead .day{font-size:11.5px;font-weight:800;color:#fff;background:var(--teal);padding:3px 9px;border-radius:999px}
+.dots{display:flex;gap:5px}
+.dots i{width:8px;height:8px;border-radius:50%;background:var(--line);display:block}
+.dots i.done{background:var(--gold)}
+.dots i.cur{background:var(--coral);transform:scale(1.35)}
+.meters{display:grid;grid-template-columns:1fr 1fr;gap:7px 16px}
+@media(max-width:560px){.meters{grid-template-columns:1fr}}
+.meter{}
+.meter .top{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;margin-bottom:3px}
+.meter .top b{font-weight:800;color:var(--ink)}
+.meter .top .val{font-weight:900;font-variant-numeric:tabular-nums}
+.meter .top .delta{font-size:11px;font-weight:900;margin-left:6px;opacity:0;transition:opacity .3s}
+.meter .top .delta.up{color:var(--green)}
+.meter .top .delta.down{color:var(--danger)}
+.meter .top .delta.show{opacity:1}
+.track{height:8px;background:#ece5d4;border-radius:99px;overflow:hidden}
+.fill{height:100%;border-radius:99px;transition:width .55s cubic-bezier(.3,.9,.4,1)}
+
+/* stage */
+.stagehead{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.chip{font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px;border:1px solid}
+.chip.kotter{color:var(--blue);background:#eaf1f7;border-color:#c6dbec}
+.chip.concept{color:var(--coral-deep);background:#fbeae3;border-color:#f2cbba}
+h2.stitle{font-size:20px;margin:2px 0 8px}
+.scene{font-size:15px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:15px}
+.scene .q{color:var(--teal-deep);font-weight:800}
+
+.opts{display:flex;flex-direction:column;gap:11px}
+.opt{text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:13px;padding:14px 16px;cursor:pointer;transition:all .14s;font-family:var(--sans)}
+.opt:hover{border-color:var(--teal);background:#fbfdfb;transform:translateY(-1px);box-shadow:var(--shadow-soft)}
+.opt:active{transform:translateY(0)}
+.opt .k{display:inline-flex;width:24px;height:24px;border-radius:7px;background:var(--teal-soft);color:var(--teal-deep);font-weight:900;font-size:14px;align-items:center;justify-content:center;margin-right:9px;flex:0 0 auto}
+.opt .lab{font-weight:800;font-size:15px;color:var(--ink)}
+.opt .desc{font-size:13px;color:var(--muted);margin-top:5px;padding-left:33px}
+.opt[disabled]{opacity:.4;pointer-events:none}
+
+/* feedback */
+.fb{border-radius:13px;padding:16px 18px;margin-top:4px;border:1px solid}
+.fb.good{background:var(--teal-soft);border-color:#bcdccb}
+.fb.mid{background:var(--gold-soft);border-color:#e6cfa0}
+.fb.bad{background:#fbe7e2;border-color:#f0c3b5}
+.fb .pickline{font-size:12.5px;font-weight:800;color:var(--muted);margin-bottom:6px}
+.fb .pickline b{color:var(--ink)}
+.fb .msg{font-size:14.5px;color:var(--ink);line-height:1.6}
+.deltas{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.dchip{font-size:12px;font-weight:800;padding:4px 10px;border-radius:8px;font-variant-numeric:tabular-nums}
+.dchip.up{color:var(--green);background:#e4f2ea}
+.dchip.down{color:var(--danger);background:#f8e3de}
+.dchip.zero{color:var(--subtle);background:#efe9db}
+
+/* result */
+.ending{text-align:center;padding:8px 4px 4px}
+.ending .tier{font-size:12px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;padding:5px 14px;border-radius:999px;display:inline-block;margin-bottom:12px}
+.ending h1{font-size:26px;margin:0 0 4px}
+.tier.win{background:var(--teal);color:#fff}
+.tier.good{background:var(--green);color:#fff}
+.tier.mid{background:var(--gold);color:#fff}
+.tier.bad{background:var(--danger);color:#fff}
+.ending .narr{font-size:15px;color:var(--ink);max-width:620px;margin:6px auto 2px}
+
+.concepts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px;margin:16px 0}
+@media(max-width:640px){.concepts{grid-template-columns:1fr}}
+.ccard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
+.ccard .cn{font-size:12px;font-weight:900;color:#fff;width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;background:var(--coral);margin-bottom:8px}
+.ccard h4{font-size:14px;margin:0 0 6px;color:var(--teal-deep)}
+.ccard p{font-size:12.5px;color:var(--muted);margin:0;line-height:1.55}
+.ccard .verdict{font-size:11.5px;font-weight:800;margin-top:8px;padding:3px 9px;border-radius:7px;display:inline-block}
+.ccard .verdict.ok{background:#e4f2ea;color:var(--green)}
+.ccard .verdict.no{background:#f8e3de;color:var(--danger)}
+
+.goldline{background:linear-gradient(180deg,#fffef9,#fbf4e6);border:1px solid var(--gold);border-left:4px solid var(--gold);border-radius:12px;padding:15px 18px;margin:14px 0}
+.goldline .q{font-family:var(--serif);font-size:16px;color:var(--teal-deep);font-weight:700;line-height:1.6}
+.goldline .t{font-size:13px;color:var(--gold);font-weight:800;margin-top:8px}
+
+.recap{margin:16px 0 4px}
+.recap h3{font-size:15px;margin-bottom:9px}
+.rrow{display:flex;gap:11px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.rrow:last-child{border-bottom:0}
+.rrow .rn{flex:0 0 auto;width:22px;height:22px;border-radius:6px;background:var(--teal-soft);color:var(--teal-deep);font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center}
+.rrow .rt b{color:var(--ink)}
+.rrow .rt span{color:var(--muted)}
+
+.handoff{background:var(--teal);color:#fff;border-radius:13px;padding:16px 18px;margin:16px 0 6px}
+.handoff h4{color:#fff;font-size:14px;margin:0 0 5px}
+.handoff p{color:#dbeae4;font-size:13.5px;margin:0}
+.handoff b{color:#fff}
+
+.foot{text-align:center;font-size:11.5px;color:var(--subtle);margin-top:22px;line-height:1.7}
+.foot b{color:var(--muted)}
+.row2{display:flex;gap:11px}
+.row2>*{flex:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">
+    <svg class="mark" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect x="1.5" y="1.5" width="37" height="37" rx="10" fill="#e5efe9" stroke="#064d43" stroke-width="1.5"/>
+      <path d="M6 21h6l3-9 5 16 3-10 2 3h9" stroke="#064d43" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="30.5" cy="12" r="3" fill="#e85b38"/>
+    </svg>
+    <div>
+      <b>希吉亞護理領導學苑</b>
+      <span>次世代健康政策護理領導人才培力計劃</span>
+    </div>
+    <div class="spacer"></div>
+    <div class="modtag">M7 模組互動</div>
+  </div>
+
+  <div id="app"></div>
+
+  <div class="foot">
+    <b>M7｜照護創新、數位減負跟風險溝通</b><br>
+    帶場：廖家德・范硯平　｜　沒有標準答案，只有取捨。走一遍，再把你走通的路徑寫進工作紙。
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   M7 智慧醫療導入之旅 — 90 天試點模擬器
+   五項指標（皆 0–100，皆為越高越好）：
+   a 採用率 / b 減負成效 / f 順流度(低摩擦) / g 風險護欄 / t 信任資本
+   ============================================================ */
+
+var METERS = [
+  {key:"a", name:"採用率",   sub:"第一線真的在用",       color:"#064d43"},
+  {key:"b", name:"減負成效", sub:"真的省下工時與重工",   color:"#b8842d"},
+  {key:"f", name:"順流度",   sub:"低摩擦・嵌入工作流",   color:"#326a9b"},
+  {key:"g", name:"風險護欄", sub:"病安・資料・責任守住", color:"#2e7d5b"},
+  {key:"t", name:"信任資本", sub:"同儕醫師主管病人",     color:"#e85b38"}
+];
+
+var START = {a:24, b:18, f:50, g:50, t:45};
+
+var STAGES = [
+  {
+    day:"D0", phase:"立案・急迫感", kotter:"Kotter①　鎖定機會・急迫感", concept:"導入起手式",
+    title:"第 1 關｜替導入定調",
+    scene:"院方撥了一筆預算，要你導入 AI 照護助手<span class='q'>「曙光 Aurora」</span>——它能自動生成交班摘要與轉出病摘，並提供早期預警提示。<span class='q'>你做的第一件事，決定了所有人怎麼看這個案子。</span>",
+    opts:[
+      {k:"A", lab:"辦一場盛大的數位轉型啟動記者會", desc:"先把聲量做出來，讓全院都知道我們在做 AI。",
+       fx:{a:6,b:0,f:-4,g:-2,t:-6},
+       tone:"bad", msg:"聲量有了，第一線卻只覺得「又一個上面交代的專案」。急迫感要連到<b>他們的痛</b>，不是你的 KPI——否則熱鬧開場、冷清收場。"},
+      {k:"B", lab:"先蹲點三天，找出護理師最痛的重工", desc:"跟著跑班，看文書、轉錄、等待卡在哪裡。",
+       fx:{a:2,b:6,f:6,g:2,t:10},
+       tone:"good", msg:"你發現<b>交班轉錄與轉出病摘</b>最吃時間。急迫感從「醫護過勞」長出來，比任何口號都有力——這正是奇美從「最痛恨的文書」切入的起手式。"},
+      {k:"C", lab:"開跨部門大會，先訂使用率 KPI 與罰則", desc:"由上而下，把指標壓下去，要各單位配合。",
+       fx:{a:8,b:0,f:-6,g:-2,t:-10},
+       tone:"bad", msg:"命令能催出短期使用數字，卻換不到真心。<b>被逼著用的工具，第一次當機就會被丟掉。</b>急迫感不是恐嚇，是讓人看見不抓住這窗口會錯過什麼。"}
+    ]
+  },
+  {
+    day:"D7", phase:"組隊・志願軍", kotter:"Kotter②④　領導聯盟・志願軍", concept:"關鍵同盟",
+    title:"第 2 關｜誰跟你一起推",
+    scene:"一個人推不動一家醫院。<span class='q'>你要組一支怎樣的隊伍？</span>",
+    opts:[
+      {k:"A", lab:"只找資訊室，當成純技術專案", desc:"把系統做好做穩，臨床端等上線再說。",
+       fx:{a:-4,b:0,f:4,g:2,t:-6},
+       tone:"bad", msg:"系統會動，臨床端卻覺得「這不是我們的東西」。<b>IT 與臨床互相聽不懂</b>，是導入最常見的破口——工具是給人用的，不是給機房的。"},
+      {k:"B", lab:"組跨職類小隊：臨床意見領袖＋自願護理師＋資訊室", desc:"先讓一小群人用順手、用出成果。",
+       fx:{a:8,b:2,f:4,g:0,t:12},
+       tone:"good", msg:"你先<b>讓一小群人富起來</b>。他們順手好用就會好康道相報——同儕效應比公文有效十倍。奇美的 16 人志願軍，就是這樣毛遂自薦長出來的。"},
+      {k:"C", lab:"請院長下令，各單位指派代表參加", desc:"用層級把人湊齊，效率最高。",
+       fx:{a:4,b:0,f:-2,g:0,t:-6},
+       tone:"mid", msg:"被指派的代表<b>人到、心沒到</b>。志願軍的關鍵字是「自願」，不是「指派」——名單湊得齊，動能湊不齊。"}
+    ]
+  },
+  {
+    day:"D14", phase:"嵌入・低摩擦", kotter:"M7 概念①　低摩擦導入", concept:"低摩擦導入",
+    title:"第 3 關｜曙光怎麼進到護理師的一天",
+    scene:"工具再好，卡在流程外就沒人用。<span class='q'>曙光要用什麼方式嵌入日常？</span>",
+    opts:[
+      {k:"A", lab:"獨立新系統，另開帳號、另一個登入", desc:"乾淨獨立，資安好切割。",
+       fx:{a:-10,b:-4,f:-14,g:2,t:0},
+       tone:"bad", msg:"每天多一次登入、多一個視窗。你以為只是小麻煩，第一線卻<b>用腳投票</b>。記住：多一個功能，不如少一次轉錄。"},
+      {k:"B", lab:"嵌進現有 HIS 交班畫面，一鍵帶入、少一次轉錄", desc:"不改變習慣，只讓它變輕。",
+       fx:{a:12,b:16,f:16,g:0,t:4},
+       tone:"good", msg:"護理師沒有「在用新系統」的感覺，工作卻變輕了。<b>轉出病摘 15 分鐘變 5 分鐘</b>——這就是低摩擦導入的威力：省一次查找、少一段等待，勝過十個新功能。"},
+      {k:"C", lab:"先把所有想得到的功能都加上去", desc:"愈強大愈好，一次到位最划算。",
+       fx:{a:-2,b:-6,f:-10,g:-4,t:0},
+       tone:"bad", msg:"功能愈多、介面愈亂、愈沒人學得會。<b>導入的敵人不是功能太少，是摩擦太多。</b>"}
+    ]
+  },
+  {
+    day:"D21", phase:"風險・責任邊界", kotter:"M7 概念③　風險溝通", concept:"風險溝通",
+    title:"第 4 關｜「出事誰負責？」",
+    scene:"醫師與法務踩剎車：<span class='q'>「AI 給的建議，出事誰負責？」</span>病安室也擔心機敏資料上雲。這道牆不拆，導入寸步難行。",
+    opts:[
+      {k:"A", lab:"淡化：「曙光很準，放心用，不會有事」", desc:"先把疑慮壓下去，別擋了進度。",
+       fx:{a:6,b:0,f:0,g:-16,t:-8},
+       tone:"bad", msg:"你把風險藏起來，風險不會消失，只會<b>在最糟的時機爆出來</b>。淡化風險，是在替未來的自己埋雷。"},
+      {k:"B", lab:"白紙黑字寫進 SOP：AI 輔助、人負最終責任；上雲前去識別化；設回報機制", desc:"先架好護欄，大家才敢用。",
+       fx:{a:4,b:0,f:-2,g:16,t:12},
+       tone:"good", msg:"先說清楚<b>責任邊界與資安</b>，醫師反而敢用了。風險溝通不是滅火，是先把護欄架好、大家才敢在路上開快——這也是奇美用匿名化＋院長保證＋SOP 做的事。"},
+      {k:"C", lab:"怕爭議，乾脆把早期預警功能關掉，只留文書", desc:"避開最敏感的部分，穩穩來。",
+       fx:{a:-2,b:2,f:0,g:6,t:-2},
+       tone:"mid", msg:"關掉爭議，也關掉價值。<b>為了躲風險而閹割成效，導入就失去意義</b>——重點是管理風險，不是逃避風險。"}
+    ]
+  },
+  {
+    day:"D30", phase:"試點・90 天設計", kotter:"M7 概念②　90 天試點", concept:"90 天試點",
+    title:"第 5 關｜要怎麼開始用",
+    scene:"護欄架好了，接下來<span class='q'>用多大的範圍、多久，來驗證它能不能擴散？</span>",
+    opts:[
+      {k:"A", lab:"一次全院上線，展現決心", desc:"要做就做大，別拖泥帶水。",
+       fx:{a:10,b:0,f:-12,g:-12,t:-6},
+       tone:"bad", msg:"還沒驗證就全押。任何一個沒料到的坑，都會在<b>全院同時炸開</b>，一次賠掉所有信任——這是導入最貴的一種勇敢。"},
+      {k:"B", lab:"選 1–2 個自願單位做 90 天最小可行試點，先定好採用／成效／風險三組指標", desc:"小範圍、真數據、看得到採用與風險。",
+       fx:{a:2,b:4,f:6,g:12,t:10},
+       tone:"good", msg:"90 天試點的意義，是<b>用最小代價換到「能不能擴散」的答案</b>。三組指標一起看——只看使用率會騙自己，要同時盯成效與風險。"},
+      {k:"C", lab:"只在示範病房做給長官看，不收真實數據", desc:"先讓長官滿意，數據之後再補。",
+       fx:{a:4,b:0,f:0,g:-6,t:-8},
+       tone:"bad", msg:"表演給長官看的試點，數據漂亮卻<b>沒人相信</b>。沒有真實數據，試點只是一場秀——擴散的時候原形畢露。"}
+    ]
+  },
+  {
+    day:"D45", phase:"危機・修正迴圈", kotter:"Kotter⑦　從經驗持續學習", concept:"風險溝通・迴圈",
+    title:"第 6 關｜試點中期的坑",
+    scene:"試點第 45 天，夜班反映曙光的早期預警<span class='q'>「誤報太多」</span>，開始有人抱怨，甚至有人偷偷不看提示了。<span class='q'>每個導入都會遇到這一天。</span>",
+    opts:[
+      {k:"A", lab:"要求大家再忍耐，指標不能難看", desc:"撐過這陣子，數字先顧住。",
+       fx:{a:-12,b:0,f:0,g:-4,t:-14},
+       tone:"bad", msg:"你保護了報表，卻弄丟了人心。叫第一線忍耐誤報，等於<b>教他們學會忽略所有警示</b>——這才是真正的病安風險。"},
+      {k:"B", lab:"48 小時內回收意見、調高預警閾值、公開說明改了什麼", desc:"讓大家看見「講了會被聽見、會被改」。",
+       fx:{a:10,b:2,f:0,g:8,t:14},
+       tone:"good", msg:"導入不是一次做對，是<b>快速修正的迴圈</b>。你把一次抱怨變成一筆信任的存款——大家發現這個計畫聽得進去，才願意繼續押注。"},
+      {k:"C", lab:"乾脆整個計畫喊停，等完美再上", desc:"有爭議就先收，穩妥要緊。",
+       fx:{a:-14,b:-8,f:0,g:0,t:-4},
+       tone:"bad", msg:"因為一個<b>可調的參數</b>就全面收手，前面的累積歸零。完美主義是導入的隱形殺手——沒有一次上線是完美的。"}
+    ]
+  },
+  {
+    day:"D90", phase:"擴散・融入文化", kotter:"Kotter⑥⑧　慶祝戰果・融入文化", concept:"擴散與治理",
+    title:"第 7 關｜90 天到了，下一步",
+    scene:"試點單位數據不錯：採用穩、負擔真的降、風險守得住。<span class='q'>現在，你怎麼走下一步？</span>",
+    opts:[
+      {k:"A", lab:"立刻全院強制推，趁勝追擊", desc:"熱度正高，一鼓作氣鋪到底。",
+       fx:{a:10,b:0,f:-10,g:0,t:-8},
+       tone:"mid", msg:"用強制擴散賭掉了信任。志願軍好不容易長出來，<b>一道命令就把它打回「又一個上面交代的事」</b>——擴散的節奏，比擴散的速度重要。"},
+      {k:"B", lab:"用真實數據說故事，逐步擴到相似單位，保留回饋機制，並寫進臨床 SOP 與新人訓練", desc:"把戰果變成下一步的燃料。",
+       fx:{a:14,b:10,f:6,g:6,t:12},
+       tone:"good", msg:"你把 AI 從「一個專案」變成「工作方式」。<b>寫進 SOP 與新人訓練那一刻，導入才真正落地</b>——這是奇美從第一個 A+ 走到整個 A+ 系列、再升格建制的路。"},
+      {k:"C", lab:"停在試點就好，別擴散免得出錯", desc:"守住現在的成果最安全。",
+       fx:{a:-6,b:-4,f:0,g:4,t:-2},
+       tone:"mid", msg:"守成也是一種流失。第一個成功若不擴散，<b>價值就鎖死在一間病房</b>，投入的心力慢慢蒸發——別太早停，也別太晚停。"}
+    ]
+  }
+];
+
+/* ---------- 結局 ---------- */
+function computeEnding(m){
+  var total = m.a+m.b+m.f+m.g+m.t;
+  if(m.g < 35) return {
+    tier:"bad", label:"導入失敗", title:"導入變成了病安事件",
+    narr:"曙光被查出一次責任不清的事故，計畫緊急下架。不是工具不準——是<b>護欄沒架好</b>。回看第 4 關：風險溝通不是進度的絆腳石，它決定了這個導入能不能活下來。"
+  };
+  if(m.a < 35) return {
+    tier:"bad", label:"導入失敗", title:"一座昂貴的蚊子館",
+    narr:"系統很潮，登入率卻是個位數。<b>功能再新，沒嵌進工作流、沒減到負擔，就只是躺在伺服器裡的擺設。</b>第 3 關的低摩擦導入，是這一局真正的分水嶺。"
+  };
+  if(m.a >= 52 && (m.f < 42 || m.b < 40)) return {
+    tier:"mid", label:"半套成功", title:"用了，卻更累了",
+    narr:"大家在用，但多了登入、多了填寫，摩擦不減反增。採用率漂亮，第一線卻在加班——這叫<b>數位形式主義</b>：有導入之名，無減負之實。"
+  };
+  if(m.a>=58 && m.b>=46 && m.g>=56 && m.t>=56 && m.f>=56) return {
+    tier:"win", label:"落地典範", title:"這，就是低摩擦導入",
+    narr:"真的減負、真的順手、風險守得住、被信任，而且寫進了 SOP、可以擴散。<b>你同時回答了成效、採用、風險與治理</b>——這正是 M7 想教會領導者的全部。"
+  };
+  if(total >= 278) return {
+    tier:"good", label:"穩健推進", title:"一個站得住的導入者",
+    narr:"不完美，但方向對了：試點站穩、信任在累積、風險守得住。<b>再走一輪、補上最虛的那一格，就能擴散。</b>導入本來就是一場需要第二輪的長局。"
+  };
+  return {
+    tier:"mid", label:"還在路上", title:"導入沒垮，但牆還沒拆完",
+    narr:"你撐住了，可是有幾道牆還卡著。回頭看看哪一項指標最低——<b>那就是你下一個 90 天要優先補的地方。</b>任何一格是 0 分，整套變革都會被它拖住。"
+  };
+}
+
+/* 三概念回饋（依最終指標給「做到了 / 還沒到」的評語） */
+function conceptCards(m){
+  return [
+    {n:"①", h:"低摩擦導入",
+     ok:(m.f>=58 && m.b>=50),
+     yes:"你把工具嵌進了工作流，省下的是真實的工時。第一線用得順，因為你替他們少做了工。",
+     no:"摩擦還在：登入、填寫、切換視窗，任何一個都會讓人放棄。少一次重工，勝過多一個功能。"},
+    {n:"②", h:"90 天試點",
+     ok:(m.g>=55 && m.t>=52),
+     yes:"你用最小可行範圍、真實數據，換到了「能不能擴散」的答案，還經得起中期危機的修正。",
+     no:"試點的紀律沒站穩：不是範圍太大、就是只看使用率、或是遇到危機沒接住。試點是用小代價買答案。"},
+    {n:"③", h:"風險溝通",
+     ok:(m.g>=58 && m.t>=55),
+     yes:"你先講清楚責任邊界與資安，把護欄架在前面——大家才敢在上面開快車。",
+     no:"風險被淡化或被逃避了。管理風險、而不是藏起風險，才是讓醫師、法務、病安都敢點頭的關鍵。"}
+  ];
+}
+
+/* ============================================================
+   狀態機與渲染
+   ============================================================ */
+var state = {screen:"intro", idx:0, m:Object.assign({}, START), history:[]};
+var app = document.getElementById("app");
+
+function clamp(v){ return Math.max(0, Math.min(100, v)); }
+function esc(s){ return s; }
+
+function metersHTML(showPhase){
+  var s = STAGES[state.idx] || STAGES[STAGES.length-1];
+  var doneCount = state.history.length;
+  var dots = STAGES.map(function(_,i){
+    var c = i < doneCount ? "done" : (i===state.idx && state.screen==="play" ? "cur" : "");
+    return "<i class='"+c+"'></i>";
+  }).join("");
+  var head = "";
+  if(showPhase){
+    head = "<div class='mbhead'><div class='phase'>階段 "+(state.idx+1)+"／7　<em>"+s.phase+"</em></div>"+
+           "<div class='dots'>"+dots+"</div>"+
+           "<div class='day'>"+s.day+"</div></div>";
+  }
+  var rows = METERS.map(function(mt){
+    var v = state.m[mt.key];
+    return "<div class='meter'>"+
+      "<div class='top'><b>"+mt.name+"</b><span><span class='val' style='color:"+mt.color+"'>"+v+"</span>"+
+      "<span class='delta' id='d_"+mt.key+"'></span></span></div>"+
+      "<div class='track'><div class='fill' id='f_"+mt.key+"' style='width:"+v+"%;background:"+mt.color+"'></div></div>"+
+    "</div>";
+  }).join("");
+  return "<div class='meterbar'>"+head+"<div class='meters'>"+rows+"</div></div>";
+}
+
+/* ---------- 開場 ---------- */
+function renderIntro(){
+  state.screen="intro";
+  app.innerHTML =
+  "<div class='card'>"+
+    "<div class='eyebrow'>M7 · 90 天試點模擬器</div>"+
+    "<h1 class='big'>智慧醫療導入之旅</h1>"+
+    "<p class='lede'>創新能不能成功，不在於工具多新，而在於能不能真正減輕負擔、被人採用。你有 90 天。</p>"+
+
+    "<div class='rolebox'>"+
+      "<h3>你的角色</h3>"+
+      "<p>你是一家區域醫院的<b>導入負責人（護理領導）</b>。院方交給你一個 AI 照護助手<span class='tool'>「曙光 Aurora」</span>——會自動生成交班摘要與轉出病摘，並提供早期預警提示。<br>你的任務：用 <b>90 天</b>，讓它從一個系統，變成大家真正在用、而且用得更輕鬆的工作方式。</p>"+
+    "</div>"+
+
+    "<p style='font-size:14px;color:var(--muted);margin:14px 0 6px'><b style='color:var(--teal-deep)'>怎麼玩：</b>7 個決策關卡，每關 3 個選擇。沒有明顯對錯，只有取捨。每個決定即時牽動下面 5 項指標，90 天後看你走出哪一種結局。</p>"+
+
+    "<div class='metersintro'>"+
+      METERS.map(function(mt){
+        return "<div class='mi'><span class='dot' style='background:"+mt.color+"'></span><div><b>"+mt.name+"</b><small>"+mt.sub+"</small></div></div>";
+      }).join("")+
+    "</div>"+
+    "<p style='font-size:12px;color:var(--subtle);margin:8px 0 0'>五項指標皆為 0–100，<b>皆為越高越好</b>；順流度越高＝摩擦越低、越嵌入工作流。</p>"+
+
+    "<details class='fac'>"+
+      "<summary>給講師：3 種帶法</summary>"+
+      "<div class='facbody'>"+
+        "<div class='facrow'><span class='n'>1</span><b>個人單機自玩</b>——每人一台裝置各走一遍，再比較誰走出典範結局、卡在哪一格。</div>"+
+        "<div class='facrow'><span class='n'>2</span><b>分組共識決</b>（推薦）——投影主畫面，每關讓小組先辯論再舉手表決，講師點選；停在後果回饋處帶討論。</div>"+
+        "<div class='facrow'><span class='n'>3</span><b>兩組對戰</b>——A、B 兩組同題各走一遍，最後比五項指標總分，用差異切入低摩擦與風險溝通的取捨。</div>"+
+        "<div style='margin-top:10px;font-size:12.5px;color:var(--subtle)'>收尾：把小組走通的路徑，直接填進 M7 工作紙的「試點路徑與風險護欄」。</div>"+
+      "</div>"+
+    "</details>"+
+
+    "<button class='btn coral' onclick='start()' style='margin-top:16px'>接下曙光，開始這 90 天 →</button>"+
+  "</div>";
+  window.scrollTo(0,0);
+}
+
+function start(){ state.idx=0; state.m=Object.assign({}, START); state.history=[]; renderStage(); }
+
+/* ---------- 關卡 ---------- */
+function renderStage(){
+  state.screen="play";
+  var s = STAGES[state.idx];
+  app.innerHTML =
+    metersHTML(true)+
+    "<div class='card'>"+
+      "<div class='stagehead'>"+
+        "<span class='chip kotter'>"+s.kotter+"</span>"+
+        "<span class='chip concept'>"+s.concept+"</span>"+
+      "</div>"+
+      "<h2 class='stitle'>"+s.title+"</h2>"+
+      "<div class='scene'>"+s.scene+"</div>"+
+      "<div class='opts' id='opts'>"+
+        s.opts.map(function(o,i){
+          return "<button class='opt' onclick='choose("+i+")'>"+
+            "<span><span class='k'>"+o.k+"</span><span class='lab'>"+o.lab+"</span></span>"+
+            "<div class='desc'>"+o.desc+"</div>"+
+          "</button>";
+        }).join("")+
+      "</div>"+
+    "</div>";
+  window.scrollTo(0,0);
+}
+
+function fxLabel(k){ for(var i=0;i<METERS.length;i++){ if(METERS[i].key===k) return METERS[i].name; } return k; }
+
+function choose(i){
+  var s = STAGES[state.idx];
+  var o = s.opts[i];
+  var before = Object.assign({}, state.m);
+  var applied = {};
+  for(var k in o.fx){
+    var nv = clamp(state.m[k] + o.fx[k]);
+    applied[k] = nv - before[k];   // 實際變化（夾在 0–100 後）
+    state.m[k] = nv;
+  }
+  state.history.push({stage:s.title, k:o.k, lab:o.lab, concept:s.concept});
+
+  // 鎖住選項
+  var opts = document.getElementById("opts");
+  var btns = opts.getElementsByClassName("opt");
+  for(var b=0;b<btns.length;b++){ btns[b].setAttribute("disabled","true"); }
+
+  // 更新指標條 + 浮動增減
+  METERS.forEach(function(mt){
+    var fill = document.getElementById("f_"+mt.key);
+    var valEl = fill ? fill.parentNode.parentNode.querySelector(".val") : null;
+    if(fill) fill.style.width = state.m[mt.key] + "%";
+    if(valEl) valEl.textContent = state.m[mt.key];
+    var d = applied[mt.key] || 0;
+    var dEl = document.getElementById("d_"+mt.key);
+    if(dEl && d!==0){
+      dEl.textContent = (d>0?"+":"")+d;
+      dEl.className = "delta show " + (d>0?"up":"down");
+      setTimeout(function(el){ return function(){ el.className="delta"; }; }(dEl), 1600);
+    }
+  });
+
+  // 後果回饋
+  var chips = METERS.map(function(mt){
+    var d = applied[mt.key];
+    if(d===undefined) d=0;
+    var cls = d>0?"up":(d<0?"down":"zero");
+    var txt = (d>0?"+":"")+d;
+    return "<span class='dchip "+cls+"'>"+mt.name+" "+txt+"</span>";
+  }).join("");
+
+  var fb = "<div class='fb "+o.tone+"'>"+
+      "<div class='pickline'>你選了　<b>"+o.k+"｜"+o.lab+"</b></div>"+
+      "<div class='msg'>"+o.msg+"</div>"+
+      "<div class='deltas'>"+chips+"</div>"+
+    "</div>"+
+    "<button class='btn' style='margin-top:14px' onclick='nextStage()'>"+
+      (state.idx < STAGES.length-1 ? "繼續下一步 →" : "看 90 天後的結果 →")+
+    "</button>";
+
+  var card = opts.parentNode;
+  var wrap = document.createElement("div");
+  wrap.innerHTML = fb;
+  card.appendChild(wrap);
+  wrap.scrollIntoView({behavior:"smooth", block:"nearest"});
+}
+
+function nextStage(){
+  if(state.idx < STAGES.length-1){ state.idx++; renderStage(); }
+  else { renderResult(); }
+}
+
+/* ---------- 結局 ---------- */
+function renderResult(){
+  state.screen="result";
+  var m = state.m;
+  var e = computeEnding(m);
+  var cc = conceptCards(m);
+
+  var recap = state.history.map(function(h,i){
+    return "<div class='rrow'><span class='rn'>"+(i+1)+"</span>"+
+      "<div class='rt'><b>"+h.k+"｜"+h.lab+"</b><br><span>"+h.stage.replace(/^第 \d+ 關｜/,"")+"　·　"+h.concept+"</span></div></div>";
+  }).join("");
+
+  var conceptsHTML = cc.map(function(c){
+    return "<div class='ccard'>"+
+      "<div class='cn'>"+c.n+"</div>"+
+      "<h4>"+c.h+"</h4>"+
+      "<p>"+(c.ok?c.yes:c.no)+"</p>"+
+      "<span class='verdict "+(c.ok?"ok":"no")+"'>"+(c.ok?"✓ 你做到了":"○ 這一格還虛")+"</span>"+
+    "</div>";
+  }).join("");
+
+  app.innerHTML =
+    metersHTML(false)+
+    "<div class='card'>"+
+      "<div class='ending'>"+
+        "<span class='tier "+e.tier+"'>"+e.label+"</span>"+
+        "<h1>"+e.title+"</h1>"+
+        "<p class='narr'>"+e.narr+"</p>"+
+      "</div>"+
+
+      "<hr class='rule'>"+
+      "<h3 style='font-size:15px'>你這一局的三張成績單</h3>"+
+      "<div class='concepts'>"+conceptsHTML+"</div>"+
+
+      "<div class='goldline'>"+
+        "<div class='q'>「創新能不能成功，不在於工具多新，而在於是否嵌入工作流、降低摩擦，並說清楚責任邊界。」</div>"+
+        "<div class='t'>M7 帶得走的一句：導入方案必須同時回答成效、採用、風險與治理。</div>"+
+      "</div>"+
+
+      "<div class='recap'>"+
+        "<h3>你的 7 個決策</h3>"+recap+
+      "</div>"+
+
+      "<div class='handoff'>"+
+        "<h4>把這一局，交回工作紙</h4>"+
+        "<p>挑出你走通（或修正後想採）的路徑，寫成 M7 的<b>「試點路徑與風險護欄」</b>：哪個單位先試、90 天看哪三組指標、病安／資料／責任怎麼被守住、遇到誤報怎麼修。這就是你這場模組的交付。</p>"+
+      "</div>"+
+
+      "<div class='row2' style='margin-top:16px'>"+
+        "<button class='btn ghost' onclick='renderIntro()'>回到說明</button>"+
+        "<button class='btn coral' onclick='start()'>換一種走法，再玩一次 ↻</button>"+
+      "</div>"+
+    "</div>";
+  window.scrollTo(0,0);
+}
+
+/* 啟動 */
+renderIntro();
+</script>
+</body>
+</html>
